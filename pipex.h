@@ -28,6 +28,7 @@ typedef struct s_data
 	int	ac;
 	int	file1;
 	int	file2;
+	int	fd[2];
 	char	**cut1;
 	char	**cut2;
 	char	*cmd1;

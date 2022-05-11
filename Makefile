@@ -18,7 +18,7 @@ CFLAGS = -Wall -Wextra -Werror -g
 
 RM = rm -f
 
-SRC = pipex.c pipex_utils.c
+SRC = pact.c pipex_utils.c
 
 OBJS = ${SRC:.c=.o}
 
