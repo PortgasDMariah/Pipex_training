@@ -26,17 +26,23 @@ void	init(t_stock *data, int ac, char **av, char **env)
 	data->cut2 = NULL;
 	data->cmd1 = NULL;
 	data->cmd2 = NULL;
+	data->error = 0;
 }
 
-char	*ft_command_exist(char *cmd, char **env)
+char	*ft_command_exist(char *cmd, char **env, t_stock *data)
 {
 	char	*path;
 	char	*path_bis;
 	char	*new_path;
 
 	path = (ft_path(env) + 5);
-	if(cmd && access(cmd, X_OK) == 0)
-		return(cmd);
+	if(ft_found_char(cmd, '/') != -1)
+	{
+		if(cmd && access(cmd, X_OK) == 0)
+			return(cmd);
+		else
+			return(data->error = 1, NULL);
+	}
 	while(cmd && path && (ft_found_char(path, ':') != -1))
 	{
 		path_bis = ft_strdup(path, ft_found_char(path, ':'));
@@ -82,13 +88,20 @@ void	ft_error(int ac, char **av, char **env, t_stock *data)
 		write(2, "bash: ", 6);
 		perror(av[4]);
 	}
+	close(data->file2);//
+	close(data->file1);//
 }
 
-void	ft_command_not_found(char *av)
+void	ft_command_not_found(char *av, t_stock *data)
 {
 	ft_putstr_fd("bash: ", 2);
-	ft_putstr_fd(av, 2);
-	ft_putstr_fd(": command not found\n", 2);
+	if(data->error != 1)
+	{
+		ft_putstr_fd(av, 2);
+		ft_putstr_fd(": command not found\n", 2);
+	}
+	else
+		perror(av);
 }
 
 void	free_well(char	**str, int tmp, char *s)
@@ -100,8 +113,12 @@ void	free_well(char	**str, int tmp, char *s)
 	{
 		if(!str)
 			return;
-		while(str && str[i++])
+		while(str && str[i])
+		{
 			free(str[i]);
+			i++;
+		}
+		//free(str);//erreur vient de la 
 	}
 	else
 	{
@@ -118,12 +135,20 @@ void	child_one(t_stock *data)
 	if(data->av[3] && data->av[3][0] != '\0')
 	{
 		data->cut2 = ft_split(data->av[3], ' ');
-		data->cmd2 = ft_command_exist(data->cut2[0], data->env);
+		data->cmd2 = ft_command_exist(data->cut2[0], data->env, data);
 	}
 	if(!data->cmd2)
 	{
-		ft_command_not_found(data->av[3]);
+		ft_command_not_found(data->av[3], data);
 		free_well(data->cut2, 1, "");
+		free(data->cut2);
+		close(data->file1);
+		close(data->file2);
+		/*
+		close(1);
+		close(2);
+		close(0);
+		*/
 		exit(127);
 	}
 	execve(data->cmd2, data->cut2, data->env);
@@ -138,12 +163,20 @@ void	child_two(t_stock *data)
 	if(data->av[2] && data->av[2][0] != '\0')
 	{
 		data->cut1 = ft_split(data->av[2], ' ');
-		data->cmd1 = ft_command_exist(data->cut1[0], data->env);
+		data->cmd1 = ft_command_exist(data->cut1[0], data->env, data);
 	}
 	if(!data->cmd1)
 	{
-		ft_command_not_found(data->av[3]);
+		ft_command_not_found(data->av[2], data);
 		free_well(data->cut1, 1, "");
+		free(data->cut1);
+		close(data->file1);
+		close(data->file2);
+		/*
+		close(1);
+		close(2);
+		close(0);
+		*/
 		exit(1);
 	}
 	execve(data->cmd1, data->cut1, data->env);
@@ -214,8 +247,6 @@ int main(int ac, char **av, char **env)
 	ft_parsing(&data);
 	close(data.file1);
 	close(data.file2);
-
-
 	}
 	return(0);
 }

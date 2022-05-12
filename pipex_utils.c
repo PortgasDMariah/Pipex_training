@@ -64,16 +64,7 @@ static char     *ft_strdupi(const char *str, char sep)
         res[v] = '\0';
         return (res);
 }
-/*
-void	ft_free_split(char **str)
-{
-	int i;
-	i = 0;
-	while(str[i++])
-		free(str[i]);
 
-}
-*/
 
 char    **ft_split(char const *s, char c)
 {
@@ -104,9 +95,12 @@ char    **ft_split(char const *s, char c)
                         i++;
                 v++;
         }
-        split[ft_word(c, ((char *)s))] = 0;
+        //split[ft_word(c, ((char *)s))] = 0;
+        split[v] = 0;
         return (split);
 }
+
+
 
 int ft_strleni(char *str)
 {
